@@ -109,12 +109,6 @@ if __name__ == '__main__':
     group_list = [i for i in group_list if i in CPC_definition.keys()]
     
     
-    texts = data_sample['TAC_keyword']
-    
-    dct = Dictionary(texts)
-    dct.filter_extremes(no_below = 10,
-                        no_above=0.1)
-    keyword_list = dct.token2id.keys()
     #%% 04. encoding cpc and keyword
     
     # conda install -c conda-forge ipywidgets
@@ -141,6 +135,14 @@ if __name__ == '__main__':
     
     # with open(directory + 'input/encoded_CPC.pkl', 'rb') as fr:
     #     encoded_CPC = pickle.load(fr)
+    
+    #%%
+    texts = data_sample['TAC_keyword']
+    
+    dct = Dictionary(texts)
+    dct.filter_extremes(no_below = 10,
+                        no_above=0.1)
+    keyword_list = dct.token2id.keys()
     
     text_list = keyword_list
     standard = {}
@@ -232,7 +234,6 @@ if __name__ == '__main__':
     #%% 06. LDA tunning 
 
     warnings.filterwarnings('ignore')
-    texts = data_sample['TAC_keyword']
     
     # dct = Dictionary(texts)
     # dct.filter_extremes(no_below = 10,
@@ -260,7 +261,6 @@ if __name__ == '__main__':
     
         
         return coherence_model_lda.get_coherence()
-    
     
     
     grid = {}
