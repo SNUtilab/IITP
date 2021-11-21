@@ -30,20 +30,24 @@ if __name__ == '__main__':
     data_sample = data_preprocessing.filter_by_textsize(data_sample)
     data_sample = data_preprocessing.preprocess_text(data_sample, directory)
     
-    
     #%% phase 2. embedding
     
     import embedding
     from gensim.corpora import Dictionary
     
-    # CPC embedding    
-    with open( directory+ '/input/CPC_definition.pkl', 'rb') as fr :
-        CPC_definition = pickle.load(fr)
+    try :
+        # CPC embedding    
+        with open( directory+ '/input/CPC_definition.pkl', 'rb') as fr :
+            CPC_definition = pickle.load(fr)
+    except :
+        with open( 'D:/OneDrive - 아주대학교/db/patent/CPC/CPC_definition.pkl', 'rb') as fr :
+            CPC_definition = pickle.load(fr)
+
 
     CPC_dict =  embedding.generate_CPC_dict(data_sample)
     CPC_dict_filtered = embedding.filter_CPC_dict(data_sample, CPC_dict,  CPC_definition)
     encoded_CPC = embedding.CPC_embedding(CPC_definition, CPC_dict_filtered)
-    
+    #%%
     texts = data_sample['TAC_keyword']
     
     # document embedding, ready to LDA
@@ -54,7 +58,9 @@ if __name__ == '__main__':
     corpus = [keyword_dct.doc2bow(text) for text in texts]
     # encoded_keyword = embedding.keyword_embedding(keyword_list)
     
-    docs = data_sample['TAC_keyword'].apply(lambda x : " ".join(x))
+    texts = [[k for k in doc if k in keyword_list] for doc in texts]
+    
+    docs = [" ".join(i) for i in texts]
     encoded_docs = embedding.docs_embedding(docs)
     
     
@@ -71,15 +77,19 @@ if __name__ == '__main__':
     
     lda_model = LDA.model_by_tunning(tunning_results, corpus, keyword_dct)
     
-    #%% phase 4. 
+    #%% phase 4. Find novelty topic 
     import LDA
     
+    topic_word_df = LDA.get_topic_word_matrix(lda_model)
     topic_doc_df = LDA.get_topic_doc(lda_model, corpus)
+    encoded_topic = LDA.get_encoded_topic(topic_doc_df, encoded_docs)
+    CPC_topic_matrix = LDA.get_CPC_topic_matrix(encoded_CPC, encoded_topic) 
     
-    #%% 
-    import numpy as np 
+    #%%
+    import LDA
     
-    x = np.linalg.solve(encoded_docs, topic_doc_df)
+    
+    
     
     
     #%% phase 3. genearte sim matrix

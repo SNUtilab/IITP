@@ -135,3 +135,46 @@ def get_topic_doc(lda_model, corpus) :
     topic_doc_df = np.nan_to_num(topic_doc_df)
     
     return(topic_doc_df)
+
+
+def get_topic_word_matrix(lda_model) :
+    
+    topic_word_df = pd.DataFrame()
+    
+    for i in range(0, lda_model.num_topics) :
+        temp = lda_model.show_topic(i, 1000)
+        DICT = {}
+        for tup in temp :
+            DICT[tup[0]] = tup[1]
+            
+        topic_word_df = topic_word_df.append(DICT, ignore_index =1)
+        
+    topic_word_df = topic_word_df.transpose()
+    
+    return(topic_word_df)
+    
+    
+def get_encoded_topic(topic_doc_df, encoded_docs) :
+    
+    x = np.linalg.lstsq(topic_doc_df, encoded_docs, rcond = -1)
+    encoded_topic = x[0]
+    
+    return(encoded_topic)
+
+def cosine(u, v):
+    return 1 -(np.dot(u, v) / (np.linalg.norm(u) * np.linalg.norm(v)))
+
+def get_CPC_topic_matrix(encoded_CPC, encoded_topic) :
+    
+    CPC_topic_matrix = pd.DataFrame(columns = range(0, encoded_topic.shape[0]), index = encoded_CPC.keys())
+    
+    for topic in range(0, encoded_topic.shape[0]) :
+        
+        for cpc in encoded_CPC.keys() :
+            cpc_embedding = encoded_CPC[cpc]
+            sim = cosine(encoded_topic[topic], cpc_embedding)
+            
+            CPC_topic_matrix[topic][cpc] =  sim
+        
+    
+    return CPC_topic_matrix
