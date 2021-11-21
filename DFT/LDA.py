@@ -178,3 +178,18 @@ def get_CPC_topic_matrix(encoded_CPC, encoded_topic) :
         
     
     return CPC_topic_matrix
+
+def classifying_topic(CPC_topic_matrix, standard) :
+    
+    result_dict = {}
+    
+    for topic, min_value in enumerate(CPC_topic_matrix.min()) :
+        
+        if min_value >= standard :
+            result_dict[topic] = 'Novel'
+        else : 
+            result_dict[topic] = 'Common'
+            
+    return(result_dict)
+        
+    

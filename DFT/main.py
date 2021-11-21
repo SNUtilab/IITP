@@ -85,21 +85,30 @@ if __name__ == '__main__':
     encoded_topic = LDA.get_encoded_topic(topic_doc_df, encoded_docs)
     CPC_topic_matrix = LDA.get_CPC_topic_matrix(encoded_CPC, encoded_topic) 
     
-    #%%
+    #%% test
     import LDA
+    import numpy as np
+    import matplotlib.pyplot as plt
     
+    # CPC_topic_matrix.apply()
+    standard = np.percentile(CPC_topic_matrix.min(), 80) # 거의 0.9
     
+    classified_topics = LDA.classifying_topic(CPC_topic_matrix, standard)
+    #%%
+    novel_topics = [k for k,v in classified_topics.items() if v== 'Novel']
+    #%%
+    temp = topic_word_df[novel_topics]
+    # 전체
+    # plt.hist(CPC_topic_matrix.to_numpy().flatten(), bins=100)
     
+    # 최근접
+    # plt.hist(CPC_topic_matrix.min().to_numpy().flatten(), bins= 10)
     
     
     #%% phase 3. genearte sim matrix
     import pandas as pd
-    import numpy as np
-    import embedding
     
-    class_matrix = embedding.get_sim_matrix(CPC_dict_filtered['class_list'], encoded_CPC, encoded_keyword)
-    subclass_matrix = embedding.get_sim_matrix(CPC_dict_filtered['subclass_list'], encoded_CPC, encoded_keyword)
-    group_matrix = embedding.get_sim_matrix(CPC_dict_filtered['group_list'], encoded_CPC, encoded_keyword)
+    import embedding
     
     standard = {}
     standard['class'] = np.percentile(class_matrix, 95)
