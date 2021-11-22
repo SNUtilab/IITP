@@ -33,26 +33,27 @@ if __name__ == '__main__':
     #%% phase 2. embedding
     
     import embedding
+    import CPC
     from gensim.corpora import Dictionary
     
     try :
         # CPC embedding    
-        with open( directory+ '/input/CPC_definition.pkl', 'rb') as fr :
+        with open( directory+ '/input/CPC_subclass_def.pkl', 'rb') as fr :
             CPC_definition = pickle.load(fr)
     except :
-        with open( 'D:/OneDrive - 아주대학교/db/patent/CPC/CPC_definition.pkl', 'rb') as fr :
+        with open( 'D:/OneDrive - 아주대학교/db/patent/CPC/CPC_subclass_def.pkl', 'rb') as fr :
             CPC_definition = pickle.load(fr)
 
 
-    CPC_dict =  embedding.generate_CPC_dict(data_sample)
-    CPC_dict_filtered = embedding.filter_CPC_dict(data_sample, CPC_dict,  CPC_definition)
+    CPC_dict =  CPC.generate_CPC_dict(data_sample)
+    CPC_dict_filtered = CPC.filter_CPC_dict(data_sample, CPC_dict,  CPC_definition)
     encoded_CPC = embedding.CPC_embedding(CPC_definition, CPC_dict_filtered)
-    #%%
+    
     texts = data_sample['TAC_keyword']
     
     # document embedding, ready to LDA
     keyword_dct = Dictionary(texts)
-    keyword_dct.filter_extremes(no_below = 10, no_above=0.1)
+    keyword_dct.filter_extremes(no_below = 10, no_above = 0.1)
     keyword_list = keyword_dct.token2id.keys()
     
     corpus = [keyword_dct.doc2bow(text) for text in texts]
@@ -62,7 +63,6 @@ if __name__ == '__main__':
     
     docs = [" ".join(i) for i in texts]
     encoded_docs = embedding.docs_embedding(docs)
-    
     
     #%% phase 3. LDA tunning and modelling
     
@@ -84,6 +84,8 @@ if __name__ == '__main__':
     topic_doc_df = LDA.get_topic_doc(lda_model, corpus)
     encoded_topic = LDA.get_encoded_topic(topic_doc_df, encoded_docs)
     CPC_topic_matrix = LDA.get_CPC_topic_matrix(encoded_CPC, encoded_topic) 
+
+    
     
     #%% test
     import LDA
@@ -92,11 +94,11 @@ if __name__ == '__main__':
     
     # CPC_topic_matrix.apply()
     standard = np.percentile(CPC_topic_matrix.min(), 80) # 거의 0.9
-    
+    standard = 0.9
     classified_topics = LDA.classifying_topic(CPC_topic_matrix, standard)
-    #%%
+
     novel_topics = [k for k,v in classified_topics.items() if v== 'Novel']
-    #%%
+    
     temp = topic_word_df[novel_topics]
     # 전체
     # plt.hist(CPC_topic_matrix.to_numpy().flatten(), bins=100)

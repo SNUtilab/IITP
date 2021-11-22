@@ -4,6 +4,8 @@ Created on Fri Nov 19 16:44:19 2021
 
 @author: tmlab
 """
+
+#conda install -c conda-forge spacy
 import pandas as pd
 import numpy as np
 from collections import Counter 

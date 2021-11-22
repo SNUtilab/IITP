@@ -10,8 +10,9 @@ from gensim.models import CoherenceModel
 import numpy as np
 import pandas as pd
 
-def compute_coherence_values(corpus, dictionary, texts, k, a, b):
+def compute_coherence_values(corpus, dictionary, texts, k, a, b, method = "u_mass"):
     
+    result = {}
     lda_model = LdaMulticore(corpus=corpus,
                              id2word=dictionary,
                              num_topics=k, 
@@ -22,12 +23,15 @@ def compute_coherence_values(corpus, dictionary, texts, k, a, b):
                              eta=b,
                              )
     
-    coherence_model_lda = CoherenceModel(model=lda_model, 
-                                         texts=texts, 
-                                         dictionary=dictionary, 
-                                         coherence='u_mass')
-    
-    return coherence_model_lda.get_coherence()
+    result['perplexity'] = lda_model.log_perplexity(corpus)
+    for method in ['u_mass', 'c_v', 'c_uci', 'c_npmi'] :
+        coherence_model_lda = CoherenceModel(model=lda_model, 
+                                             texts=texts, 
+                                             dictionary=dictionary, 
+                                             coherence= method)
+        result[method] = coherence_model_lda.get_coherence()
+        
+    return result
 
 def tunning(texts, dct, corpus) :
     
@@ -41,14 +45,14 @@ def tunning(texts, dct, corpus) :
     topics_range = range(min_topics, max_topics, step_size)
     
     # Alpha parameter
-    alpha = list(np.arange(0.01, 1, 0.3))
-    # alpha = [0.01, 0.05, 0.1, 1]
+    # alpha = list(np.linspace(0.01, 1, 0.3))
+    alpha = [0.01, 0.01, 0.5, 1]
     alpha.append('symmetric')
     alpha.append('asymmetric')
     
     # Beta parameter
-    beta = list(np.arange(0.01, 1, 0.3))
-    # beta = [0.01, 0.05, 0.1, 1]
+    # beta = list(np.arange(0.01, 1, 0.3))
+    beta = [0.01, 0.01, 0.5, 1]
     beta.append('symmetric')
     
     # Validation sets
@@ -64,7 +68,12 @@ def tunning(texts, dct, corpus) :
                      'Topics': [],
                      'Alpha': [],
                      'Beta': [],
-                     'Coherence': []
+                     'Perplexity': [],
+                     'U_mass' : [],
+                     'C_v' : [],
+                     'C_uci' : [],
+                     'C_npmi' : [],
+                     
                     }
     # Can take a long time to run
     if 1 == 1:
@@ -80,18 +89,26 @@ def tunning(texts, dct, corpus) :
                     # iterare through beta values
                     for b in beta:
                         # get the coherence score for the given parameters
-                        cv = compute_coherence_values(corpus=corpus_sets[i], 
+                        result = compute_coherence_values(corpus=corpus_sets[i], 
                                                       dictionary=dct,
                                                       texts = texts,
                                                       k=k, 
                                                       a=a, 
                                                       b=b)
+                        
+                        
                         # Save the model results
                         model_results['Validation_Set'].append(corpus_title[i])
                         model_results['Topics'].append(k)
                         model_results['Alpha'].append(a)
                         model_results['Beta'].append(b)
-                        model_results['Coherence'].append(cv)
+                        model_results['Perplexity'].append(result['perplexity'])
+                        model_results['U_mass'].append(result['u_mass'])
+                        model_results['C_v'].append(result['c_v'])
+                        model_results['C_uci'].append(result['c_uci'])
+                        model_results['C_npmi'].append(result['c_cpmi'])
+                        
+                        
                         cnt +=1
                         print("전체 {} 중에서 {} ".format(len(alpha) *len(beta) *len(topics_range),cnt))
                         
@@ -133,6 +150,7 @@ def get_topic_doc(lda_model, corpus) :
         topic_doc_df = topic_doc_df.append(DICT, ignore_index=1)
     topic_doc_df = np.array(topic_doc_df)
     topic_doc_df = np.nan_to_num(topic_doc_df)
+    
     
     return(topic_doc_df)
 
@@ -192,4 +210,7 @@ def classifying_topic(CPC_topic_matrix, standard) :
             
     return(result_dict)
         
+
+# def get_topic_title(topic_doc_df, data_sample) :
+    
     
