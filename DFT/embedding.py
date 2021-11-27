@@ -14,7 +14,7 @@ model = SentenceTransformer('sentence-transformers/multi-qa-mpnet-base-dot-v1')
 def cosine(u, v):
     return np.dot(u, v) / (np.linalg.norm(u) * np.linalg.norm(v))
 
-def CPC_embedding(CPC_definition, CPC_dict):
+def CPC_embedding(model, CPC_definition, CPC_dict):
     
     subclass_list = CPC_dict['subclass_list']
     
@@ -22,10 +22,17 @@ def CPC_embedding(CPC_definition, CPC_dict):
     
     for i in subclass_list :
         encoded_CPC[i] = model.encode(CPC_definition[i].lower())
+    
+    encoded_CPC_ = []
+    
+    for temp in encoded_CPC.values() :   
+        encoded_CPC_.append(temp)
+        # encoded_CPC = np.append([encoded_CPC, temp])
+    encoded_CPC_ = np.array(encoded_CPC)
         
     return(encoded_CPC)
 
-def keyword_embedding(keyword_list) :
+def keyword_embedding(model, keyword_list) :
     
     text_list = keyword_list
     
@@ -41,7 +48,7 @@ def keyword_embedding(keyword_list) :
 
     return(encoded_text)
 
-def docs_embedding(docs) :
+def docs_embedding(model, docs) :
     
     embedding_result = model.encode(docs)
     

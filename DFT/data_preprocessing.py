@@ -9,9 +9,8 @@ Created on Fri Nov 19 16:44:19 2021
 import pandas as pd
 import numpy as np
 from collections import Counter 
-from spacy.cli import download
-
-import nltk
+# from spacy.cli import download
+# import nltk
 from nltk.corpus import stopwords    
 import spacy
 import re
@@ -57,11 +56,12 @@ def filter_by_textsize(df, col = 'TAC', MIN = 100) :
 
 def preprocess_text(df, directory) :
     
-    nltk.download('stopwords')
+    # nltk.download('stopwords')
     stopwords_nltk = set(stopwords.words('english'))
-    download('en_core_web_sm')
+    # download('en_core_web_sm')
     
     nlp = spacy.load("en_core_web_sm")
+    
     with open(directory + '/input/stopwords_uspto.txt') as f:
         stopwords_uspto = [line.rstrip() for line in f]
     stopwords_uspto.append('-PRON-')

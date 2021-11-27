@@ -388,6 +388,7 @@ if __name__ == '__main__':
     topic_doc_df['title'] = data_sample['title']
     
     #%%
+    
     topic_year_df = pd.DataFrame()
     for col in range(0, lda_model.num_topics) :
         grouped = topic_doc_df[col].groupby(topic_doc_df['year'])
@@ -401,7 +402,7 @@ if __name__ == '__main__':
         
     import xlsxwriter
     # directory = 'C:/Users/tmlab/Desktop/작업공간/'
-    writer = pd.ExcelWriter(directory + 'LDA_results.xlsx', 
+    writer = pd.ExcelWriter('./output/LDA_results.xlsx', 
                             engine='xlsxwriter')
     
     topic_word_df.to_excel(writer , sheet_name = 'topic_word', index = 1)

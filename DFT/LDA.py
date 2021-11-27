@@ -46,13 +46,13 @@ def tunning(texts, dct, corpus) :
     
     # Alpha parameter
     # alpha = list(np.linspace(0.01, 1, 0.3))
-    alpha = [0.01, 0.01, 0.5, 1]
+    alpha = [0.01, 0.1, 0.5, 1]
     alpha.append('symmetric')
     alpha.append('asymmetric')
     
     # Beta parameter
     # beta = list(np.arange(0.01, 1, 0.3))
-    beta = [0.01, 0.01, 0.5, 1]
+    beta = [0.01, 0.1, 0.5, 1]
     beta.append('symmetric')
     
     # Validation sets
@@ -106,14 +106,27 @@ def tunning(texts, dct, corpus) :
                         model_results['U_mass'].append(result['u_mass'])
                         model_results['C_v'].append(result['c_v'])
                         model_results['C_uci'].append(result['c_uci'])
-                        model_results['C_npmi'].append(result['c_cpmi'])
+                        model_results['C_npmi'].append(result['c_npmi'])
                         
                         
                         cnt +=1
                         print("전체 {} 중에서 {} ".format(len(alpha) *len(beta) *len(topics_range),cnt))
                         
     return(pd.DataFrame(model_results))
-        
+def lda_model(corpus, dct, Topics, Alpha, Beta) :
+    
+    lda_model = LdaMulticore(corpus=corpus,
+                             id2word=dct,
+                             num_topics= Topics, 
+                             random_state=100,
+                             chunksize=100,
+                             passes=10,
+                             alpha= Alpha,
+                             eta= Beta,
+                             )
+    
+    return(lda_model)
+    
     
 def model_by_tunning(tunning_results, corpus, dct) :
     
@@ -180,7 +193,7 @@ def get_encoded_topic(topic_doc_df, encoded_docs) :
     return(encoded_topic)
 
 def cosine(u, v):
-    return 1 -(np.dot(u, v) / (np.linalg.norm(u) * np.linalg.norm(v)))
+    return (np.dot(u, v) / (np.linalg.norm(u) * np.linalg.norm(v)))
 
 def get_CPC_topic_matrix(encoded_CPC, encoded_topic) :
     
@@ -197,20 +210,107 @@ def get_CPC_topic_matrix(encoded_CPC, encoded_topic) :
     
     return CPC_topic_matrix
 
+def get_topic_novelty(CPC_topic_matrix) :
+    
+    result_dict = {}
+    
+    for topic, max_value in enumerate(CPC_topic_matrix.max()) :
+        
+        result_dict[topic] = 1/max_value
+        
+    return(result_dict)
+        
+    
 def classifying_topic(CPC_topic_matrix, standard) :
     
     result_dict = {}
     
-    for topic, min_value in enumerate(CPC_topic_matrix.min()) :
+    for topic, max_value in enumerate(CPC_topic_matrix.max()) :
         
-        if min_value >= standard :
+        if max_value <= standard :
             result_dict[topic] = 'Novel'
         else : 
             result_dict[topic] = 'Common'
             
     return(result_dict)
         
+def get_topic_vol(lda_model, corpus) :
 
-# def get_topic_title(topic_doc_df, data_sample) :
+    topic_doc_df = pd.DataFrame(columns = range(0, lda_model.num_topics))
+    
+    for corp in corpus :
+        
+        temp = lda_model.get_document_topics(corp)
+        DICT = {}
+        for tup in temp :
+            DICT[tup[0]] = tup[1]
+        
+        topic_doc_df = topic_doc_df.append(DICT, ignore_index=1)
+    
+    result = topic_doc_df.apply(np.sum).to_dict()
+    
+    return(result)
+    
+def get_topic_vol_year(lda_model, topic_doc_df, data_sample) :
+    
+    topic_doc_df = pd.DataFrame(topic_doc_df)
+    topic_doc_df['year'] = data_sample['year']
+    topic_doc_df['title'] = data_sample['title']
+    
+    topic_year_df = pd.DataFrame()
+    for col in range(0, lda_model.num_topics) :
+        grouped = topic_doc_df[col].groupby(topic_doc_df['year'])
+        DICT = grouped.sum()
+        topic_year_df = topic_year_df.append(DICT, ignore_index=1)
+    
+    topic_year_df = topic_year_df.transpose()
+    
+    return(topic_year_df)
+#     return(result_df)
+# # def get_topic_title(topic_doc_df, data_sample) :
     
     
+def get_topic_CAGR(topic_year_df) :
+    
+    st_year = min(topic_year_df.index)
+    ed_year = 2020 # 2020 fix
+    
+    duration = int(ed_year) - int(st_year)
+    
+    result = {}
+    
+    for col in topic_year_df :
+        st_val = topic_year_df[col][0]
+        ed_val = topic_year_df[col][duration]
+        CAGR = (ed_val/st_val)**(1/duration) -1
+        result[col] = CAGR
+    
+    return(result)
+    
+
+def get_topic2CPC(CPC_topic_matrix) :
+    
+    result_dict = {}
+    
+    for col in CPC_topic_matrix.columns :
+        
+        result_dict[col] = pd.to_numeric(CPC_topic_matrix[col]).idxmax()
+    
+    return(result_dict)
+
+def get_most_similar_doc2topic(data_sample, topic_doc_df) :
+    
+    result_df = pd.DataFrame()
+    
+    for col in range(topic_doc_df.shape[1]) :
+        
+        DICT = {}
+        idx = topic_doc_df[col].argmax()
+        value = topic_doc_df[col].max()
+        DICT['title'] = data_sample['title'][idx]
+        DICT['year'] = data_sample['year'][idx]
+        DICT['similarity'] = value
+        
+        result_df = result_df.append(DICT, ignore_index=1)
+    
+    return(result_df)
