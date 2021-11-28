@@ -11,10 +11,14 @@ if __name__ == '__main__':
     import pickle
     from copy import copy
     from gensim.corpora import Dictionary
+    import PySimpleGUI as sg
+    
 
     directory = os.path.dirname(os.path.abspath(__file__))
     directory = directory.replace("\\", "/") # window|
     os.chdir(directory)    
+    
+        
     
     #%% phase 1. data laod
     
