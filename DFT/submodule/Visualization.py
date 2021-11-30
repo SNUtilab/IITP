@@ -17,7 +17,7 @@ import pandas as pd
 
 pio.renderers.default = "browser"    
 
-def pchart_CPC_topic(CPC_topic_matrix, topic_list) :
+def pchart_CPC_topic(CPC_topic_matrix, topic_list, directory) :
     
     df = pd.DataFrame()
     for idx, row in CPC_topic_matrix.iterrows() :
@@ -41,9 +41,11 @@ def pchart_CPC_topic(CPC_topic_matrix, topic_list) :
            # ['ggplot2', 'seaborn', 'simple_white', 'plotly',
          # 'plotly_white', 'plotly_dark', 'presentation', 'xgridoff',
          # 'ygridoff', 'gridon', 'none']
-    fig.show()
+    # fig.show()
+    plotly.offline.plot(fig, filename= directory + '/pchart.html')
+    
 
-def heatmap_CPC_topic(CPC_topic_matrix) :
+def heatmap_CPC_topic(CPC_topic_matrix, directory) :
     
     fig = go.Figure(data=go.Heatmap(
                         z=CPC_topic_matrix,
@@ -64,11 +66,12 @@ def heatmap_CPC_topic(CPC_topic_matrix) :
         # color="#7f7f7f",
         ))
     
-    fig.show()
-    plotly.offline.plot(fig, filename='./output/heatmap_C2T.html')
+    # fig.show()
+    plotly.offline.plot(fig, filename= directory + '/heatmap_C2T.html')
     
     
-def portfolio_CPC_topic(Novelty_dict, CAGR_dict, volumn_dict, CPC_topic_matrix, CPC_match_dict) :
+def portfolio_CPC_topic(Novelty_dict, CAGR_dict, volumn_dict, CPC_topic_matrix, CPC_match_dict,
+                        directory) :
     
     temp = minmax_scale(list(Novelty_dict.values()), axis=0, copy=True)
     temp_ = minmax_scale(list(CAGR_dict.values()), axis=0, copy=True)
@@ -113,5 +116,5 @@ def portfolio_CPC_topic(Novelty_dict, CAGR_dict, volumn_dict, CPC_topic_matrix, 
         # color="#7f7f7f",
         ))
     
-    fig.show()
-    plotly.offline.plot(fig, filename='./output/portfolio_topic.html')
+    # fig.show()
+    plotly.offline.plot(fig, filename= directory +'/portfolio_topic.html')

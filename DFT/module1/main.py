@@ -16,13 +16,14 @@ if __name__ == '__main__':
 
     directory = os.path.dirname(os.path.abspath(__file__))
     directory = directory.replace("\\", "/") # window|
-    os.chdir(directory)    
+    os.chdir(os.path.dirname(directory)) 
+    #%%
     sys.path.append(os.path.dirname(directory)+'/submodule/')
     
     print('phase 1. loading and preprocessing data')
-    
+#%%    
     import data_preprocessing
-    with open( directory+ '/input/DT_211118.pkl', 'rb') as f :
+    with open('./input/DT_211118.pkl', 'rb') as f :
         data = pickle.load(f)
     
     data_sample = copy(data)
@@ -30,8 +31,8 @@ if __name__ == '__main__':
     data_sample = data_preprocessing.filter_by_year(data_sample)
     data_sample = data_preprocessing.filter_by_textsize(data_sample)
     data_sample = data_preprocessing.preprocess_text(data_sample, directory)
-    
-    with open( directory+ '/output/data_prep.pkl', 'wb') as f :
+   #%% 
+    with open('./output/data_prep.pkl', 'wb') as f :
         pickle.dump(data_sample, f)
     
 #%%
