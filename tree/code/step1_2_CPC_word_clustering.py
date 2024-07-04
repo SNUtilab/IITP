@@ -10,7 +10,7 @@ import random
 import os
 import sys
 
-
+# directory
 directory = 'C:/Users/tech_tree/'
 sys.path.append('C:/Users/tech_tree/최종 코드 작성(module)')
 
