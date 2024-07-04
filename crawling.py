@@ -20,6 +20,7 @@ import numpy as np
 from selenium.webdriver.common.keys import Keys
 
 # Crawling
+# Crawling
 os.chdir('C:/Users/jinny/Documents/test') 
 os.getcwd()
 
