@@ -4,7 +4,7 @@ Created on Mon Jul 19 19:41:11 2021
 
 @author: Woojin
 """
-
+# settings
 import pandas as pd
 import numpy as np
 import statistics
