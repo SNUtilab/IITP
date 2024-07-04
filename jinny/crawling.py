@@ -23,6 +23,7 @@ from selenium.webdriver.common.keys import Keys
 os.chdir('C:/Users/jinny/Documents/test') 
 os.getcwd()
 
+# driver
 driver = webdriver.Chrome(r"D:/chromedriver/chromedriver.exe")
 driver.implicitly_wait(3)
 
